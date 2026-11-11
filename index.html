@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pracovní list – Právní případ</title>
+<style>
+:root{--bg:#eef0f4;--card:#fff;--ink:#1d2330;--muted:#6b7385;--accent:#3949ab;--accent2:#5c6bc0;--soft:#e8eaf6;--line:#dde1ea;--field:#f7f8fb;--ok:#2e7d32}
+@media (prefers-color-scheme:dark){:root{--bg:#12141a;--card:#1c1f28;--ink:#eceef4;--muted:#9aa2b5;--accent:#8c9eff;--accent2:#7986cb;--soft:#262b3d;--line:#2d3243;--field:#161922;--ok:#81c784}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.3;min-height:100%;height:100dvh;display:flex;flex-direction:column;
+ padding:calc(8px + env(safe-area-inset-top)) 8px calc(8px + env(safe-area-inset-bottom))}
+.wrap{max-width:720px;width:100%;margin:0 auto;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.card{background:var(--card);border-radius:12px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.info{display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px}
+.info .full{grid-column:1/-1}
+label.l{display:block;font-size:.62rem;font-weight:600;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em}
+input[type=text],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:8px;padding:5px 8px;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}
+input[type=text]{height:32px}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.q{flex:1 1 0;display:flex;flex-direction:column;min-height:74px}
+.qh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.qh h2{margin:0;font-size:.9rem;line-height:1.2}
+.qh h2 small{display:block;font-weight:400;font-size:.68rem;color:var(--muted);margin-top:1px}
+textarea{flex:1;resize:none;min-height:40px;display:block;line-height:1.3}
+.chips{display:flex;gap:4px;flex:none}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips label{display:flex;align-items:center;justify-content:center;padding:0 9px;height:28px;border:1.5px solid var(--line);border-radius:9px;background:var(--field);cursor:pointer;font-weight:600;font-size:.74rem;transition:.15s}
+.chips input:checked+label{border-color:var(--accent);background:var(--soft);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.chips input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px;background:var(--accent);color:var(--card);cursor:pointer;font-size:.85rem;width:100%;flex:none}
+.cnt{font-size:.72rem;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
+.cnt.warn{color:#d32f2f}
+.cnt.ok{color:var(--ok)}
+textarea.err{border-color:#d32f2f;box-shadow:0 0 0 3px rgba(211,47,47,.2)}
+.btn.err{background:#d32f2f;color:#fff}
+.btn:active{transform:scale(.97)}
+@media(min-width:600px){
+ body{height:auto;padding:16px}
+ .q{min-height:150px}
+}
+@media print{
+ :root{--bg:#fff;--card:#fff;--ink:#000;--muted:#444;--line:#999;--field:#fff;--soft:#fff;--accent:#000;--accent2:#000}
+ body{padding:0;height:auto}
+ .card{box-shadow:none;border:1px solid #999;break-inside:avoid;border-radius:6px}
+ .q{min-height:150px}
+ textarea{min-height:110px;overflow:visible}
+ .chips input:checked+label{background:#ddd;box-shadow:none;border:2px solid #000}
+ .btn{display:none}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <section class="card q">
+  <div class="qh"><h2>1. Co se v případu řeší?</h2><span class="cnt" data-for="q1"></span></div>
+  <textarea id="q1" data-k minlength="20" placeholder="Kdo se s kým soudí a o co jde? Vlastními slovy."></textarea>
+ </section>
+
+ <section class="card q">
+  <div class="qh"><h2>2. Jak případ dopadl?</h2><span class="cnt" data-for="q2"></span></div>
+  <textarea id="q2" data-k minlength="20" placeholder="Rozsudek, kdo uspěl, trest či rozhodnutí."></textarea>
+ </section>
+
+ <section class="card q">
+  <div class="qh">
+   <h2>3. Souhlasíš s rozsudkem?</h2><span class="cnt" data-for="q3"></span>
+  </div>
+  <textarea id="q3" data-k minlength="20" placeholder="Zdůvodni argumenty soudu."></textarea>
+ </section>
+
+ <button class="btn" id="exp" type="button">Export PDF nebo přilož screen do zadání</button>
+</main>
+
+<script>
+const KEY='pravni-pripad-pl';
+const $$=s=>document.querySelectorAll(s);
+function nacti(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+function uloz(){
+ const d={};
+ $$('[data-k]').forEach(e=>d[e.id]=e.value);
+ const r=document.querySelector('input[name=souhlas]:checked');
+ d.souhlas=r?r.value:'';
+ try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}
+}
+function obnov(){
+ const d=nacti();
+ $$('[data-k]').forEach(e=>{if(d[e.id]!==undefined)e.value=d[e.id]});
+ if(d.souhlas){const r=document.querySelector('input[name=souhlas][value='+d.souhlas+']');if(r)r.checked=true}
+}
+document.addEventListener('input',uloz);
+document.addEventListener('change',uloz);
+const MIN=20,exp=document.getElementById('exp'),txt=exp.textContent;
+let tm;
+function kratke(){return [...$$('textarea')].filter(t=>t.value.trim().length<MIN)}
+function stav(t){
+ const n=t.value.trim().length,c=document.querySelector('.cnt[data-for='+t.id+']');
+ if(n>=MIN){c.textContent='✓ Hotovo';c.className='cnt ok';t.classList.remove('err')}
+ else if(n>0){c.textContent='Ještě min. '+(MIN-n)+' '+(MIN-n===1?'znak':(MIN-n<5?'znaky':'znaků'));c.className='cnt warn';t.classList.add('err')}
+ else{c.textContent='Min. '+MIN+' znaků';c.className='cnt';t.classList.remove('err')}
+}
+document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA')stav(e.target)});
+exp.addEventListener('click',()=>{
+ const k=kratke();
+ $$('textarea').forEach(t=>t.classList.toggle('err',k.includes(t)));
+ if(k.length){
+  k[0].focus();
+  exp.classList.add('err');exp.textContent='Každá odpověď musí mít aspoň '+MIN+' znaků';
+  clearTimeout(tm);tm=setTimeout(()=>{exp.classList.remove('err');exp.textContent=txt},2500);
+ }else window.print();
+});
+obnov();
+$$('textarea').forEach(stav);
+</script>
+</body>
+</html>
